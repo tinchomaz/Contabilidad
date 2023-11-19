@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Libro Diario</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+<div class="container mt-5">
+    <h2>Libro Diario</h2>
+
+    <form>
+        <div class="form-group">
+            <label for="fecha">Fecha:</label>
+            <input type="date" class="form-control" id="fecha" name="fecha" required>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <h3>Debe</h3>
+                <div class="form-group">
+                    <label for="cuentaDebe">Cuenta:</label>
+                    <select class="form-control" id="cuentaDebe" name="cuentaDebe">
+                        <option value="CUENTAS" selected>CUENTAS</option>
+                        <option value="cuenta1">Cuenta 1</option>
+                        <option value="cuenta2">Cuenta 2</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="saldoDebe">Saldo:</label>
+                    <input type="number" class="form-control" id="saldoDebe" name="saldoDebe" step="0.01" required>
+                </div>
+                <div id="cuentasAdicionalesDebe"></div>
+                <button type="button" class="btn btn-success" onclick="agregarCuenta('cuentaDebe')">+ Agregar Cuenta</button>
+            </div>
+
+            <div class="col-md-6">
+                <h3>Haber</h3>
+                <div class="form-group">
+                    <label for="cuentaHaber">Cuenta:</label>
+                    <select class="form-control" id="cuentaHaber" name="cuentaHaber">
+                        <option value="CUENTAS" selected>CUENTAS</option>
+                        <option value="cuenta3">Cuenta 3</option>
+                        <option value="cuenta4">Cuenta 4</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="saldoHaber">Saldo:</label>
+                    <input type="number" class="form-control" id="saldoHaber" name="saldoHaber" step="0.01" required>
+                </div>
+                <div id="cuentasAdicionalesHaber"></div>
+                <button type="button" class="btn btn-success" onclick="agregarCuenta('cuentaHaber')">+ Agregar Cuenta</button>
+            </div>
+        </div>
+
+        <button type="button" class="btn btn-primary mt-3" onclick="guardarAsiento()">Guardar Asiento</button>
+
+        <div id="cuentasSaldosGuardados"></div>
+    </form>
+
+    <script>
+        function agregarCuenta(cuentaTipo) {
+            var cuentaSeleccionada = document.getElementById(cuentaTipo).value;
+
+            if (cuentaSeleccionada === 'CUENTAS') {
+                alert("Seleccione una cuenta válida.");
+                return;
+            }
+
+            var contador = (cuentaTipo === 'cuentaDebe') ? contadorCuentasDebe++ : contadorCuentasHaber++;
+
+            var nuevoCombo = document.createElement('div');
+            nuevoCombo.innerHTML = `
+                <div class="form-group">
+                    <label for="${cuentaTipo}${contador}">Cuenta ${cuentaTipo === 'cuentaDebe' ? 'DEBE' : 'HABER'}:</label>
+                    <select class="form-control" id="${cuentaTipo}${contador}" name="${cuentaTipo}">
+                        <option value="CUENTAS" selected>CUENTAS</option>
+                        <option value="cuenta1">Cuenta 1</option>
+                        <option value="cuenta2">Cuenta 2</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="saldo${cuentaTipo}${contador}">Saldo:</label>
+                    <input type="number" class="form-control" id="saldo${cuentaTipo}${contador}" name="saldo${cuentaTipo}" step="0.01" required>
+                </div>
+            `;
+            
+            if (cuentaTipo === 'cuentaDebe') {
+                document.getElementById('cuentasAdicionalesDebe').appendChild(nuevoCombo);
+            } else if (cuentaTipo === 'cuentaHaber') {
+                document.getElementById('cuentasAdicionalesHaber').appendChild(nuevoCombo);
+            }
+        }
+
+        var contadorCuentasDebe = 1;
+        var contadorCuentasHaber = 1;
+
+        function guardarAsiento() {
+            var cuentaDebe = document.getElementById('cuentaDebe').value;
+            var saldoDebe = document.getElementById('saldoDebe').value;
+            var cuentaHaber = document.getElementById('cuentaHaber').value;
+            var saldoHaber = document.getElementById('saldoHaber').value;
+
+            if (cuentaDebe === 'CUENTAS' || cuentaHaber === 'CUENTAS') {
+                alert("Seleccione una cuenta válida en DEBE y HABER.");
+                return;
+            }
+
+            var textoDebe = `<strong>DEBE:</strong>`;
+            var textoHaber = `<strong>HABER:</strong>`;
+
+            var cuentasAdicionalesDebe = document.getElementById('cuentasAdicionalesDebe').querySelectorAll('select');
+            var saldosAdicionalesDebe = document.getElementById('cuentasAdicionalesDebe').querySelectorAll('input');
+
+            for (var i = 0; i < cuentasAdicionalesDebe.length; i++) {
+                var cuentaAdicional = cuentasAdicionalesDebe[i].value;
+                var saldoAdicional = saldosAdicionalesDebe[i].value;
+                textoDebe += `<br>${cuentaAdicional} - Saldo: ${saldoAdicional}`;
+            }
+
+            var cuentasAdicionalesHaber = document.getElementById('cuentasAdicionalesHaber').querySelectorAll('select');
+            var saldosAdicionalesHaber = document.getElementById('cuentasAdicionalesHaber').querySelectorAll('input');
+
+            for (var i = 0; i < cuentasAdicionalesHaber.length; i++) {
+                var cuentaAdicional = cuentasAdicionalesHaber[i].value;
+                var saldoAdicional = saldosAdicionalesHaber[i].value;
+                textoHaber += `<br>${cuentaAdicional} - Saldo: ${saldoAdicional}`;
+            }
+
+            document.getElementById('cuentasSaldosGuardados').innerHTML = `
+                <div class="mt-3">${textoDebe}<br>${textoHaber}</div>
+            `;
+
+            document.getElementById('cuentaDebe').value = 'CUENTAS';
+            document.getElementById('saldoDebe').value = '';
+            document.getElementById('cuentasAdicionalesDebe').innerHTML = '';
+            document.getElementById('cuentaHaber').value = 'CUENTAS';
+            document.getElementById('saldoHaber').value = '';
+            document.getElementById('cuentasAdicionalesHaber').innerHTML = '';
+        }
+    </script>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Libro Mayor</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+<div class="container mt-5">
+    <h2>Libro Mayor</h2>
+
+    <!-- Página para seleccionar el tipo de cuenta -->
+    <form id="seleccionTipoCuenta">
+        <div class="form-group">
+            <label for="tipoCuenta">Seleccione el tipo de cuenta:</label>
+            <select class="form-control" id="tipoCuenta" name="tipoCuenta">
+                <option value="activo">Activo</option>
+                <option value="pasivo">Pasivo</option>
+                <option value="patrimonio">Patrimonio Neto</option>
+            </select>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="cargarCuentas()">Continuar</button>
+    </form>
+
+    <!-- Página para seleccionar la cuenta específica -->
+    <form id="seleccionCuenta" style="display: none;">
+        <div class="form-group">
+            <label for="cuenta">Seleccione la cuenta:</label>
+            <select class="form-control" id="cuenta" name="cuenta">
+                <!-- Opciones dinámicas desde la base de datos según el tipo de cuenta -->
+            </select>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="mostrarFormularioCuenta()">Continuar</button>
+    </form>
+
+    <!-- Página con el formulario para la cuenta seleccionada -->
+    <form id="formularioCuenta" style="display: none;">
+        <!-- Campos para el libro mayor de la cuenta seleccionada -->
+        <!-- ...
+             (Agrega los campos necesarios para el Libro Mayor) ...
+        -->
+    </form>
+</div>
+
+<script>
+function cargarCuentas() {
+    // Código para cargar las cuentas desde la base de datos según el tipo seleccionado
+    // ...
+
+    // Ejemplo de cómo podría lucir la estructura de opciones para las cuentas:
+    const opcionesCuentas = `
+        <option value="cuenta1">Cuenta 1</option>
+        <option value="cuenta2">Cuenta 2</option>
+        <!-- ... -->
+    `;
+
+    // Agregar las opciones al combobox de cuentas
