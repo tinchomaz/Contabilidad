@@ -16,6 +16,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $rubro = $_POST['rubro'];
     $descripcion = $_POST['descripcion'];
 
+    // Verificar que el número de cuenta sea mayor a 1
+    if ($nroCuenta < 1) {
+        echo 'invalid';
+        exit;
+    }
+
+    // Verificar que el número de cuenta no esté duplicado
+    $duplicateCheck = "SELECT COUNT(*) as count FROM plancuentas WHERE nroCuenta = '$nroCuenta'";
+    $duplicateResult = $conn->query($duplicateCheck);
+
+    if ($duplicateResult && $duplicateResult->fetch_assoc()['count'] > 0) {
+        echo 'duplicate';
+        exit;
+    }
+
     $sql = "INSERT INTO plancuentas (nroCuenta, rubro, descripcion) VALUES ('$nroCuenta', '$rubro', '$descripcion')";
     $result = $conn->query($sql);
 
@@ -24,7 +39,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 
-$sql = "SELECT * FROM plancuentas";
+$sql = "SELECT * FROM plancuentas ORDER BY CAST(nroCuenta AS SIGNED) ASC";
 $result = $conn->query($sql);
 
 if (!$result) {
@@ -38,17 +53,16 @@ while ($row = $result->fetch_assoc()) {
     $rubro = $row['rubro'];
     $descripcion = $row['descripcion'];
     switch ($rubro) {
-      case 'A':
-          $rubro = 'ACTIVO';
-          break;
-      case 'P':
-          $rubro = 'PASIVO';
-          break;
-      case 'N':
-          $rubro = 'PATRIMONIO NETO';
-          break;
-      // Puedes agregar más casos según sea necesario
-  }
+        case 'A':
+            $rubro = 'ACTIVO';
+            break;
+        case 'P':
+            $rubro = 'PASIVO';
+            break;
+        case 'N':
+            $rubro = 'PATRIMONIO NETO';
+            break;
+    }
     // Dependiendo del rubro, asignar la fila a la sección correspondiente
     switch ($rubro) {
         case 'ACTIVO':
@@ -60,7 +74,6 @@ while ($row = $result->fetch_assoc()) {
         case 'PATRIMONIO NETO':
             $patrimonioRows .= "<tr><td>$nroCuenta</td><td>$rubro</td><td>$descripcion</td></tr>";
             break;
-        // Puedes agregar más casos según sea necesario
     }
 }
 
@@ -70,194 +83,199 @@ $conn->close();
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PLAN DE CUENTAS</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      text-align: center;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLAN DE CUENTAS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            text-align: center;
+        }
 
-    h1 {
-      margin-bottom: 20px;
-    }
+        h1 {
+            margin-bottom: 20px;
+        }
 
-    button {
-      padding: 10px;
-      margin: 15px 0; /* Espaciado superior e inferior de 15px */
-      cursor: pointer;
-      background-color: #007BFF; /* Azul */
-      color: white;
-      border: none;
-      border-radius: 5px;
-      font-size: 16px;
-      display: block;
-      width: 200px;
-      margin: 15px auto; /* Centrar el botón */
-    }
+        button {
+            padding: 10px;
+            margin: 15px 0;
+            cursor: pointer;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            display: block;
+            width: 200px;
+            margin: 15px auto;
+        }
 
-    button:hover {
-      background-color: #0056b3; /* Azul más oscuro al pasar el ratón */
-    }
+        button:hover {
+            background-color: #0056b3;
+        }
 
-    .addButton {
-      background-color: #28a745; /* Verde */
-      color: white;
-      border: none;
-      border-radius: 5px;
-      padding: 5px 8px; /* Ajustar el tamaño del botón "+" */
-      margin-left: 10px; /* Espacio entre el botón principal y el botón "+" */
-    }
+        .addButton {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 8px;
+            margin-left: 10px;
+        }
 
-    .addButton:hover {
-      background-color: #218838; /* Verde más oscuro al pasar el ratón */
-    }
+        .addButton:hover {
+            background-color: #218838;
+        }
 
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      margin-top: 10px;
-    }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 10px;
+        }
 
-    th, td {
-      border: 1px solid #dddddd;
-      text-align: left;
-      padding: 8px;
-    }
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
 
-    th {
-      background-color: #f2f2f2;
-    }
-  </style>
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
 </head>
 <body>
 
-  <h1>PLAN DE CUENTAS</h1>
+<h1>PLAN DE CUENTAS</h1>
 
-  <button onclick="toggleTable('activo')">Activo</button>
-  <div id="activoTable" style="display: none;">
+<button onclick="toggleTable('activo')">Activo</button>
+<div id="activoTable" style="display: none;">
     <button class="addButton" onclick="addRow('activo')">+</button>
     <table>
-      <thead>
+        <thead>
         <tr>
-          <th>Nro. Cuenta</th>
-          <th>Rubro</th>
-          <th>Descripción</th>
+            <th>Nro. Cuenta</th>
+            <th>Rubro</th>
+            <th>Descripción</th>
         </tr>
-      </thead>
-      <tbody>
+        </thead>
+        <tbody>
         <?php echo $activoRows; ?>
-      </tbody>
+        </tbody>
     </table>
-  </div>
+</div>
 
-  <button onclick="toggleTable('pasivo')">Pasivo</button>
-  <div id="pasivoTable" style="display: none;">
+<button onclick="toggleTable('pasivo')">Pasivo</button>
+<div id="pasivoTable" style="display: none;">
     <button class="addButton" onclick="addRow('pasivo')">+</button>
     <table>
-      <thead>
+        <thead>
         <tr>
-          <th>Nro. Cuenta</th>
-          <th>Rubro</th>
-          <th>Descripción</th>
+            <th>Nro. Cuenta</th>
+            <th>Rubro</th>
+            <th>Descripción</th>
         </tr>
-      </thead>
-      <tbody>
+        </thead>
+        <tbody>
         <?php echo $pasivoRows; ?>
-      </tbody>
+        </tbody>
     </table>
-  </div>
+</div>
 
-  <button onclick="toggleTable('patrimonio')">Patrimonio Neto</button>
-  <div id="patrimonioTable" style="display: none;">
+<button onclick="toggleTable('patrimonio')">Patrimonio Neto</button>
+<div id="patrimonioTable" style="display: none;">
     <button class="addButton" onclick="addRow('patrimonio')">+</button>
     <table>
-      <thead>
+        <thead>
         <tr>
-          <th>Nro. Cuenta</th>
-          <th>Rubro</th>
-          <th>Descripción</th>
+            <th>Nro. Cuenta</th>
+            <th>Rubro</th>
+            <th>Descripción</th>
         </tr>
-      </thead>
-      <tbody>
+        </thead>
+        <tbody>
         <?php echo $patrimonioRows; ?>
-      </tbody>
+        </tbody>
     </table>
-  </div>
+</div>
 
-  <script>
+<script>
     function toggleTable(section) {
-      var table = document.getElementById(section + 'Table');
-      table.style.display = table.style.display === 'none' ? 'block' : 'none';
+        var table = document.getElementById(section + 'Table');
+        table.style.display = table.style.display === 'none' ? 'block' : 'none';
     }
 
     function addRow(section) {
-  var table = document.querySelector('#' + section + 'Table tbody');
-  var newRow = table.insertRow(table.rows.length);
-  
-  var cell1 = newRow.insertCell(0);
-  var cell2 = newRow.insertCell(1);
-  var cell3 = newRow.insertCell(2);
-  
-  // Crear un input text para cell1
-  var inputText1 = document.createElement('input');
-  inputText1.type = 'number';
-  cell1.appendChild(inputText1);
-  
-  // Agregar celda de texto según la sección
-  var inputTextRubro = document.createElement('input');
-  inputTextRubro.type = 'text';
-  inputTextRubro.value = section.toUpperCase(); // Valor predeterminado según la sección
-  inputTextRubro.readOnly = true; // Hacer el campo de solo lectura
-  cell2.appendChild(inputTextRubro);
+        var table = document.querySelector('#' + section + 'Table tbody');
+        var newRow = table.insertRow(table.rows.length);
 
-  // Crear un input text para cell3
-  var inputText2 = document.createElement('input');
-  inputText2.type = 'text';
-  cell3.appendChild(inputText2);
-   // Agregar evento para capturar la tecla "Enter"
-   inputText2.addEventListener('keyup', function(event) {
-        if (event.key === 'Enter') {
-          // Aquí puedes realizar la acción de guardar y mostrar la fila
-          saveAndShowRow(section, newRow);
-        }
-      });
+        var cell1 = newRow.insertCell(0);
+        var cell2 = newRow.insertCell(1);
+        var cell3 = newRow.insertCell(2);
+
+        // Crear un input text para cell1
+        var inputText1 = document.createElement('input');
+        inputText1.type = 'number';
+        cell1.appendChild(inputText1);
+
+        // Agregar celda de texto según la sección
+        var inputTextRubro = document.createElement('input');
+        inputTextRubro.type = 'text';
+        inputTextRubro.value = section.toUpperCase(); // Valor predeterminado según la sección
+        inputTextRubro.readOnly = true; // Hacer el campo de solo lectura
+        cell2.appendChild(inputTextRubro);
+
+        // Crear un input text para cell3
+        var inputText2 = document.createElement('input');
+        inputText2.type = 'text';
+        cell3.appendChild(inputText2);
+        // Agregar evento para capturar la tecla "Enter"
+        inputText2.addEventListener('keyup', function (event) {
+            if (event.key === 'Enter') {
+                // Aquí puedes realizar la acción de guardar y mostrar la fila
+                saveAndShowRow(section, newRow);
+            }
+        });
     }
 
     function saveAndShowRow(section, newRow) {
-    var inputs = newRow.querySelectorAll('input');
-    var nroCuenta = inputs[0].value;
-    var rubro = section.toUpperCase();
-    var descripcion = inputs[2].value;
+        var inputs = newRow.querySelectorAll('input');
+        var nroCuenta = inputs[0].value;
+        var rubro = section.toUpperCase();
+        var descripcion = inputs[2].value;
 
-    newRow.cells[0].textContent = nroCuenta;
-    newRow.cells[1].textContent = rubro;
-    newRow.cells[2].textContent = descripcion;
+        // Enviar datos al servidor mediante AJAX
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var response = this.responseText.trim();
+                if (response === 'duplicate') {
+                    alert("Ya existe un registro con el mismo número de cuenta.");
+                } else if (response === 'invalid') {
+                    alert("El número de cuenta debe ser mayor a 1.");
+                } else {
+                    // No hay duplicados ni números de cuenta inválidos, proceder con la inserción
+                    newRow.cells[0].textContent = nroCuenta;
+                    newRow.cells[1].textContent = rubro;
+                    newRow.cells[2].textContent = descripcion;
+                    inputs[0].disabled = true;
+                    inputs[2].disabled = true;
+                    inputs[0].style.display = 'none';
+                    inputs[2].style.display = 'none';
+                }
+            }
+        };
 
-    inputs[0].disabled = true;
-    inputs[2].disabled = true;
-    inputs[0].style.display = 'none';
-    inputs[2].style.display = 'none';
-
-    // Enviar datos al servidor mediante AJAX
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function () {
-      if (this.readyState == 4 && this.status == 200) {
-        // Puedes realizar alguna acción adicional si es necesario
-      }
-    };
-
-    // Cambiar la solicitud a POST y enviar datos en formato FormData
-    xhttp.open("POST", "", true);
-    var formData = new FormData();
-    formData.append('nroCuenta', nroCuenta);
-    formData.append('rubro', rubro);
-    formData.append('descripcion', descripcion);
-    xhttp.send(formData);
-  }
-  </script>
+        // Cambiar la solicitud a POST y enviar datos en formato FormData
+        xhttp.open("POST", "", true);
+        var formData = new FormData();
+        formData.append('nroCuenta', nroCuenta);
+        formData.append('rubro', rubro);
+        formData.append('descripcion', descripcion);
+        xhttp.send(formData);
+    }
+</script>
 
 </body>
 </html>
